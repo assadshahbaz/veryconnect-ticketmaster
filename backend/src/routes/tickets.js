@@ -14,17 +14,17 @@ const getMongoConnection = (req) => req.app.locals.dbConnection;
  *     Ticket:
  *       type: object
  *       required:
- *         - id
+ *         - sorting_id
  *         - name
  *       properties:
- *         id:
- *           type: string
+ *         sorting_id:
+ *           type: number
  *           description: The auto-generated ID of the ticket
  *         name:
  *           type: string
  *           description: The name of the ticket
  *       example:
- *         id: "1"
+ *         sorting_id: 1
  *         name: "Sample Ticket"
  */
 
@@ -56,7 +56,7 @@ const getMongoConnection = (req) => req.app.locals.dbConnection;
  *             schema:
  *               type: object
  *               properties:
- *                 id:
+ *                 sorting_id:
  *                   type: integer
  *                   description: Auto-incremented ID of the ticket
  *                   example: 1
@@ -91,15 +91,15 @@ router.post('/', async (req, res) => {
         const db = getMongoConnection(req);
         const Ticket = getTicketModel(db);
 
-        const lastTicket = await Ticket.findOne().sort({ id: -1 }); 
-        const nextId = lastTicket ? lastTicket.id + 1 : 1;
+        const lastTicket = await Ticket.findOne().sort({ sorting_id: -1 }); 
+        const nextId = lastTicket ? lastTicket.sorting_id + 1 : 1;
 
         const { name } = req.body;
-        const ticket = new Ticket({ id: nextId, name });
+        const ticket = new Ticket({ sorting_id: nextId, name });
         await ticket.save();
 
         // Index ticket in Elasticsearch
-        await elasticService.indexDocument('tickets', ticket._id.toString(), { id: nextId, name });
+        await elasticService.indexDocument('tickets', ticket._id.toString(), { sorting_id: nextId, name });
 
         res.status(201).json(ticket);
     } catch (err) {
@@ -156,7 +156,7 @@ router.get('/', async (req, res) => {
             res.json(results);
         } else {
             const tickets = await Ticket.find()
-                .sort({ id: 1 })
+                .sort({ sorting_id: 1 })
                 .skip((page - 1) * limit)
                 .limit(Number(limit));
             res.json(tickets);
@@ -164,6 +164,88 @@ router.get('/', async (req, res) => {
     } catch (err) {
         console.error('Error retrieving tickets:', err);
         res.status(500).json({ error: 'Failed to retrieve tickets' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/tickets/{id}:
+ *   get:
+ *     summary: Get details of a ticket
+ *     tags: [Tickets]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The MongoDB ObjectID of the ticket
+ *         example: "63be60b0a5f12e34db7e94d8"
+ *     responses:
+ *       200:
+ *         description: Details of the ticket
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: Auto-incremented ID of the ticket
+ *                   example: 1
+ *                 name:
+ *                   type: string
+ *                   description: Name of the ticket
+ *                   example: "Sample Ticket"
+ *                 _id:
+ *                   type: string
+ *                   description: MongoDB ObjectID
+ *                   example: "63be60b0a5f12e34db7e94d8"
+ *                 __v:
+ *                   type: integer
+ *                   description: MongoDB version key
+ *                   example: 0
+ *       404:
+ *         description: Ticket not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *                   example: "Ticket not found"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ *                   example: "Failed to fetch ticket details"
+ */
+
+// Get details of a single ticket
+router.get('/:id', async (req, res) => {
+    try {
+        const _id = req.params.id; // MongoDB ObjectID
+        const db = getMongoConnection(req);
+        const Ticket = getTicketModel(db);
+
+        const ticket = await Ticket.findOne({ _id });
+
+        if (!ticket) {
+            return res.status(404).json({ error: 'Ticket not found' });
+        }
+
+        res.status(200).json(ticket);
+    } catch (err) {
+        console.error('Error fetching ticket details:', err);
+        res.status(500).json({ error: 'Failed to fetch ticket details' });
     }
 });
 
@@ -203,7 +285,7 @@ router.get('/', async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 id:
+ *                 sorting_id:
  *                   type: integer
  *                   description: Auto-incremented ID of the ticket
  *                   example: 1

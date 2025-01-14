@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const ticketRoutes = require('./routes/tickets');
 const connectToMongoDB = require('./db/mongo');
@@ -7,8 +8,13 @@ const swaggerDocs = require('./swagger');
 
 require('dotenv').config();
 
+
 // Initialize Express app
 const app = express();
+
+// Allow cors origin
+app.use(cors({ origin: true }));
+
 
 // Middleware
 app.use(bodyParser.json());
