@@ -1,1 +1,13 @@
-<router-outlet></router-outlet>
+<div class="container mx-auto px-8 py-8">
+
+    <div class="flex items-center justify-between mb-8">
+        <div class="text-lg font-semibold">Ticketmaster</div>
+        <a class="bg-blue-500 text-white font-semibold py-2 px-4 rounded hover:bg-blue-600"
+            [routerLink]="['/tickets/create']">
+            Create new ticket
+        </a>
+    </div>
+
+    <router-outlet></router-outlet>
+
+</div>

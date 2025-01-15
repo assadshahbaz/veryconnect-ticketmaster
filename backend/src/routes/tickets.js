@@ -93,13 +93,16 @@ router.post('/', async (req, res) => {
 
         const lastTicket = await Ticket.findOne().sort({ sorting_id: -1 }); 
         const nextId = lastTicket ? lastTicket.sorting_id + 1 : 1;
-
+        
         const { name } = req.body;
-        const ticket = new Ticket({ sorting_id: nextId, name });
+        const post = { sorting_id: nextId, id: nextId, name: name }
+        console.log(post);
+        
+        const ticket = new Ticket(post);
         await ticket.save();
 
         // Index ticket in Elasticsearch
-        await elasticService.indexDocument('tickets', ticket._id.toString(), { sorting_id: nextId, name });
+        // await elasticService.indexDocument('tickets', ticket._id.toString(), { sorting_id: nextId, name });
 
         res.status(201).json(ticket);
     } catch (err) {
