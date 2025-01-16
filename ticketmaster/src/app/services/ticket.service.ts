@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateTicket, Ticket } from '../model/ticket.model';
+import { CreateTicket, ITickets, Ticket } from '../model/ticket.model';
 
 @Injectable({ providedIn: 'root' })
 export class TicketService {
@@ -10,12 +10,12 @@ export class TicketService {
 
     constructor(private http: HttpClient) { }
 
-    getTickets(page: number, size: number, searchTerm?: string): Observable<Ticket[]> {
+    getTickets(page: number, size: number, searchTerm?: string): Observable<ITickets> {
         let params: any = { page: page.toString(), size: size.toString() };
         if (searchTerm && searchTerm.length >= 3) {
             params = { ...params, search: searchTerm };
         }
-        return this.http.get<Ticket[]>(this.apiUrl, { params });
+        return this.http.get<ITickets>(this.apiUrl, { params });
     }
 
     getTicketById(id: string): Observable<Ticket> {

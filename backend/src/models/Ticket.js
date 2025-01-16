@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // Define the Ticket schema
 const ticketSchema = new mongoose.Schema({
-    sorting_id: { type: Number, required: true, unique: true },
+    sorting_id: { type: Number, required: true },
     name: { type: String, required: true }
 });
 

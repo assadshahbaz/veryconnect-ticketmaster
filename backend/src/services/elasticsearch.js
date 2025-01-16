@@ -21,18 +21,18 @@ const elasticService = {
         try {
             return await esClient.index({ index, id, body });
         } catch (err) {
-            console.error('Error indexing document:', err);
             throw err;
         }
     },
-
-    async searchDocuments(index, query) {
+    async searchDocuments(index, query, from = 0, size = 20) {
         try {
             const { hits } = await esClient.search({
                 index,
+                from,
+                size,
                 body: { query },
             });
-            return hits.hits.map(hit => hit._source);
+            return hits.hits.map(hit => hit._source); // Extract the `_source` from hits
         } catch (err) {
             console.error('Error searching documents:', err);
             throw err;
@@ -43,7 +43,6 @@ const elasticService = {
         try {
             return await esClient.update({ index, id, body });
         } catch (err) {
-            console.error('Error updating document:', err);
             throw err;
         }
     },
@@ -52,7 +51,6 @@ const elasticService = {
         try {
             return await esClient.delete({ index, id });
         } catch (err) {
-            console.error('Error deleting document:', err);
             throw err;
         }
     },

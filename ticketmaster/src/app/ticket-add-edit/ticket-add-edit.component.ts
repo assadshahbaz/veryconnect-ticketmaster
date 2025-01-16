@@ -41,7 +41,7 @@ export class TicketAddEditComponent implements OnInit {
   saveTicket() {
     if (this.isEditing) {
       this.ticketService.updateTicket(this.ticket._id, this.ticket).subscribe(() => {
-        this.router.navigate(['/tickets']);
+        this.router.navigate(['/tickets']);        
       });
     } else {
       this.ticketService.createTicket({name: this.ticket.name}).subscribe(() => {

@@ -5,7 +5,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
-
+import { PaginationComponent } from '../shared/pagination/pagination.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-tickets-listing',
@@ -13,6 +14,7 @@ import Swal from 'sweetalert2';
     CommonModule,
     RouterModule,
     FormsModule,
+    PaginationComponent
   ],
   templateUrl: './tickets-listing.component.html',
   styleUrl: './tickets-listing.component.css',
@@ -24,7 +26,10 @@ export class TicketsListingComponent implements OnInit {
   totalTickets = 0;
   searchTerm = '';
 
-  constructor(private ticketService: TicketService) { }
+  constructor(
+    private ticketService: TicketService,
+    private _toastrService: ToastrService,
+  ) { }
 
   ngOnInit() {
     this.loadTickets();
@@ -34,7 +39,8 @@ export class TicketsListingComponent implements OnInit {
     this.ticketService
       .getTickets(this.currentPage, this.pageSize, this.searchTerm)
       .subscribe((response) => {
-        this.tickets = response;
+        this.tickets = response.tickets;
+        this.totalTickets = response.totalTickets;
       });
   }
 
@@ -42,6 +48,8 @@ export class TicketsListingComponent implements OnInit {
     if (this.searchTerm.length >= 3) {
       this.currentPage = 1;
       this.loadTickets();
+    } else {
+      this._toastrService.error("At least 3 characters required");
     }
   }
 
@@ -72,5 +80,14 @@ export class TicketsListingComponent implements OnInit {
       }
     });
   }
-  
+
+  onPageChange(newPage: number) {
+    this.currentPage = newPage;
+    this.loadTickets();
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.totalTickets / this.pageSize);
+  }
 }
+
